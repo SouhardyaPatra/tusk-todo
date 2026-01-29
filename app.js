@@ -1387,9 +1387,30 @@ class TuskApp {
         const data = JSON.parse(localStorage.getItem('tuskApp') || '{}');
         this.tasks = data.tasks || [];
         this.soundEnabled = data.soundEnabled !== false;
+
+        // Load demo tasks if no tasks in localStorage
+        if (this.tasks.length === 0) {
+            this.loadDemoTasks();
+        }
+
         this.loadStreakData();
     }
     
+    loadDemoTasks() {
+        fetch('demo-tasks.json')
+            .then(response => response.json())
+            .then(demoTasks => {
+                this.tasks = demoTasks;
+                this.saveToStorage();
+                this.render();
+                this.updateStats();
+                this.updateProgress();
+            })
+            .catch(error => {
+                console.log('Error loading demo tasks:', error);
+            });
+    }
+
     saveStreakData() {
         const streakData = {
             streak: this.streak,
