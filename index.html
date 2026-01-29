@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tusk Todo - The Elephant Never Forgets</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated Mesh Background -->
+    <div class="mesh-gradient"></div>
+    <div class="floating-tusks">
+        <div class="tusk-shape"></div>
+        <div class="tusk-shape"></div>
+        <div class="tusk-shape"></div>
+    </div>
+    
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas"></canvas>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <span class="elephant-emoji">🐘</span>
+                    <div class="brand-glow"></div>
+                </div>
+                <div class="brand-text">
+                    <h1>Tusk Todo</h1>
+                    <p class="tagline">The Elephant Never Forgets</p>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <!-- Streak removed as requested -->
+            </div>
+            
+            <!-- Stats Cards - Clickable Filters -->
+            <div class="stats-section">
+                <div class="stat-circle active" data-type="total" data-filter="all">
+                    <div class="circle-inner">
+                        <div class="circle-icon"><i class="fas fa-list"></i></div>
+                        <div class="circle-value" id="statTotal">0</div>
+                        <div class="circle-label">All</div>
+                    </div>
+                </div>
+                <div class="stat-circle" data-type="active" data-filter="active">
+                    <div class="circle-inner">
+                        <div class="circle-icon"><i class="fas fa-spinner"></i></div>
+                        <div class="circle-value" id="statActive">0</div>
+                        <div class="circle-label">Active</div>
+                    </div>
+                </div>
+                <div class="stat-circle" data-type="completed" data-filter="completed">
+                    <div class="circle-inner">
+                        <div class="circle-icon"><i class="fas fa-check"></i></div>
+                        <div class="circle-value" id="statCompleted">0</div>
+                        <div class="circle-label">Done</div>
+                    </div>
+                </div>
+                <div class="stat-circle" data-type="memory" data-filter="remembered">
+                    <div class="circle-inner">
+                        <div class="circle-icon"><i class="fas fa-brain"></i></div>
+                        <div class="circle-value" id="statMemory">0</div>
+                        <div class="circle-label">Memory</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar Toggle (Outside sidebar for visibility) -->
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-chevron-left" id="sidebarIcon"></i>
+            </button>
+            
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <!-- Analytics Dashboard - Jira Style -->
+                <div class="sidebar-card analytics-card">
+                    <h3><i class="fas fa-chart-line"></i> Analytics</h3>
+                    
+                    <!-- Weekly Activity Chart -->
+                    <div class="chart-section">
+                        <span class="chart-title">Weekly Activity</span>
+                        <div class="bar-chart" id="weeklyChart">
+                            <div class="bar-container">
+                                <div class="bar" data-day="Mon" style="--height: 20%"><span>M</span></div>
+                                <div class="bar" data-day="Tue" style="--height: 40%"><span>T</span></div>
+                                <div class="bar" data-day="Wed" style="--height: 60%"><span>W</span></div>
+                                <div class="bar" data-day="Thu" style="--height: 30%"><span>T</span></div>
+                                <div class="bar" data-day="Fri" style="--height: 80%"><span>F</span></div>
+                                <div class="bar" data-day="Sat" style="--height: 50%"><span>S</span></div>
+                                <div class="bar" data-day="Sun" style="--height: 10%"><span>S</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Priority Breakdown -->
+                    <div class="chart-section">
+                        <span class="chart-title">Priority Breakdown</span>
+                        <div class="priority-bars">
+                            <div class="priority-row">
+                                <span class="priority-label high">High</span>
+                                <div class="priority-track">
+                                    <div class="priority-fill high" id="priorityHigh" style="width: 30%"></div>
+                                </div>
+                                <span class="priority-count" id="priorityHighCount">0</span>
+                            </div>
+                            <div class="priority-row">
+                                <span class="priority-label medium">Medium</span>
+                                <div class="priority-track">
+                                    <div class="priority-fill medium" id="priorityMedium" style="width: 50%"></div>
+                                </div>
+                                <span class="priority-count" id="priorityMediumCount">0</span>
+                            </div>
+                            <div class="priority-row">
+                                <span class="priority-label low">Low</span>
+                                <div class="priority-track">
+                                    <div class="priority-fill low" id="priorityLow" style="width: 20%"></div>
+                                </div>
+                                <span class="priority-count" id="priorityLowCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Productivity Score -->
+                    <div class="productivity-score">
+                        <div class="score-ring">
+                            <svg viewBox="0 0 36 36">
+                                <path class="score-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="score-fill" id="productivityRing" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <span class="score-value" id="productivityScore">0</span>
+                        </div>
+                        <span class="score-label">Productivity</span>
+                    </div>
+                </div>
+                
+                <!-- Duration Analytics -->
+                <div class="sidebar-card duration-card">
+                    <h3><i class="fas fa-hourglass-half"></i> Time Tracking</h3>
+                    <div class="duration-stats">
+                        <div class="duration-stat">
+                            <div class="duration-icon total"><i class="fas fa-clock"></i></div>
+                            <div class="duration-info">
+                                <span class="duration-value" id="totalDuration">0h 0m</span>
+                                <span class="duration-label">Total Planned</span>
+                            </div>
+                        </div>
+                        <div class="duration-stat">
+                            <div class="duration-icon completed"><i class="fas fa-check-circle"></i></div>
+                            <div class="duration-info">
+                                <span class="duration-value" id="completedDuration">0h 0m</span>
+                                <span class="duration-label">Completed</span>
+                            </div>
+                        </div>
+                        <div class="duration-stat">
+                            <div class="duration-icon pending"><i class="fas fa-hourglass-start"></i></div>
+                            <div class="duration-info">
+                                <span class="duration-value" id="pendingDuration">0h 0m</span>
+                                <span class="duration-label">Remaining</span>
+                            </div>
+                        </div>
+                        <div class="duration-stat">
+                            <div class="duration-icon average"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="duration-info">
+                                <span class="duration-value" id="avgDuration">0m</span>
+                                <span class="duration-label">Avg Task</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Categories -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-tags"></i> Categories</h3>
+                    <div class="category-list" id="categoryList">
+                        <div class="category-item active" data-category="all">
+                            <div class="category-dot all"></div>
+                            <span>All</span>
+                            <span class="category-count" id="catAll">0</span>
+                        </div>
+                        <div class="category-item" data-category="Work">
+                            <div class="category-dot work"></div>
+                            <span>Work</span>
+                            <span class="category-count" id="catWork">0</span>
+                        </div>
+                        <div class="category-item" data-category="Personal">
+                            <div class="category-dot personal"></div>
+                            <span>Personal</span>
+                            <span class="category-count" id="catPersonal">0</span>
+                        </div>
+                        <div class="category-item" data-category="Health">
+                            <div class="category-dot health"></div>
+                            <span>Health</span>
+                            <span class="category-count" id="catHealth">0</span>
+                        </div>
+                        <div class="category-item" data-category="Learning">
+                            <div class="category-dot learning"></div>
+                            <span>Learning</span>
+                            <span class="category-count" id="catLearning">0</span>
+                        </div>
+                        <div class="category-item" data-category="Finance">
+                            <div class="category-dot finance"></div>
+                            <span>Finance</span>
+                            <span class="category-count" id="catFinance">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pomodoro Timer -->
+                <div class="sidebar-card pomodoro-card">
+                    <h3><i class="fas fa-stopwatch"></i> Focus Timer</h3>
+                    <div class="pomodoro-display" id="pomodoroDisplay">25:00</div>
+                    <div class="pomodoro-controls">
+                        <button class="pomo-btn" id="pomoStart"><i class="fas fa-play"></i></button>
+                        <button class="pomo-btn" id="pomoPause" style="display:none"><i class="fas fa-pause"></i></button>
+                        <button class="pomo-btn" id="pomoReset"><i class="fas fa-redo"></i></button>
+                    </div>
+                    <input type="range" id="pomoDuration" min="5" max="60" value="25" class="pomo-slider">
+                    <span class="pomo-label"><span id="pomoMinutes">25</span> minutes</span>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="sidebar-card">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn" id="stampedeModeBtn" title="Complete all visible tasks">
+                            <i class="fas fa-horse-head"></i> Stampede
+                        </button>
+                        <button class="action-btn" id="clearCompletedBtn">
+                            <i class="fas fa-broom"></i> Clear Done
+                        </button>
+                        <button class="action-btn" id="exportBtn">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="action-btn" id="importBtn">
+                            <i class="fas fa-upload"></i> Import
+                        </button>
+                        <input type="file" id="importFile" accept=".json" hidden>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Quick Add - AI-Powered Modern Design -->
+                <section class="quick-add-section">
+                    <div class="ai-background-pattern">
+                        <div class="neural-node node-1"></div>
+                        <div class="neural-node node-2"></div>
+                        <div class="neural-node node-3"></div>
+                        <div class="neural-connection connection-1"></div>
+                        <div class="neural-connection connection-2"></div>
+                        <div class="neural-connection connection-3"></div>
+                    </div>
+
+                    <div class="ai-header">
+                        <div class="ai-icon-wrapper">
+                            <i class="fas fa-sparkles ai-sparkle"></i>
+                            <div class="ai-glow"></div>
+                        </div>
+                        <div class="ai-text">
+                            <h2>AI Task Assistant</h2>
+                            <p class="ai-subtitle">Smart parsing • Auto-categorization • Intelligent scheduling</p>
+                        </div>
+                        <div class="ai-status">
+                            <div class="ai-indicator">
+                                <div class="ai-pulse"></div>
+                                <span>Online</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-input-container">
+                        <div class="ai-input-wrapper">
+                            <div class="ai-brain-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <input type="text" id="taskInput" class="ai-input" placeholder='Try: "Team meeting tomorrow 3pm work !!urgent"' autocomplete="off">
+                            <div class="ai-mic-icon">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                        </div>
+
+                        <div class="ai-smart-hints">
+                            <div class="hint-pill">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>! = medium priority</span>
+                            </div>
+                            <div class="hint-pill">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>!! = high priority</span>
+                            </div>
+                            <div class="hint-pill">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>tomorrow, next week</span>
+                            </div>
+                        </div>
+
+                        <div class="ai-controls-grid">
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <i class="fas fa-flag"></i>
+                                    Priority
+                                </label>
+                                <select id="prioritySelect" class="ai-select">
+                                    <option value="Low">🟢 Low</option>
+                                    <option value="Medium" selected>🟠 Medium</option>
+                                    <option value="High">🔴 High</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <i class="fas fa-folder"></i>
+                                    Category
+                                </label>
+                                <select id="categorySelect" class="ai-select">
+                                    <option value="General">📋 General</option>
+                                    <option value="Work">💼 Work</option>
+                                    <option value="Personal">👤 Personal</option>
+                                    <option value="Health">💪 Health</option>
+                                    <option value="Learning">📚 Learning</option>
+                                    <option value="Finance">💰 Finance</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <i class="fas fa-calendar"></i>
+                                    Date
+                                </label>
+                                <input type="date" id="dueDateInput" class="ai-select">
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <i class="fas fa-clock"></i>
+                                    Start
+                                </label>
+                                <input type="time" id="timeInput" class="ai-select">
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <i class="fas fa-hourglass-end"></i>
+                                    End
+                                </label>
+                                <input type="time" id="endTimeInput" class="ai-select">
+                            </div>
+
+                            <div class="control-group control-group-full">
+                                <button class="ai-add-button" id="addTaskBtn">
+                                    <div class="ai-button-content">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add Smart Task</span>
+                                        <i class="fas fa-rocket"></i>
+                                    </div>
+                                    <div class="ai-button-glow"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Search & Sort - Unique Command Palette Style -->
+                <section class="search-sort-section">
+                    <div class="command-search">
+                        <div class="search-icon-box">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Type to search tasks..." autocomplete="off">
+                        <div class="search-shortcuts">
+                            <span class="shortcut-key">⌘</span>
+                            <span class="shortcut-key">K</span>
+                        </div>
+                        <button class="clear-search" id="clearSearch" style="display:none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="sort-dropdown">
+                        <button class="sort-trigger" id="sortTrigger">
+                            <i class="fas fa-sort-amount-down"></i>
+                            <span id="sortLabel">Newest</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <select id="sortSelect" class="sort-select-hidden">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="priority">Priority</option>
+                            <option value="dueDate">Due Date</option>
+                            <option value="alphabetical">A-Z</option>
+                        </select>
+                    </div>
+                </section>
+                
+                <!-- Task List -->
+                <section class="task-list-section">
+                    <div class="task-list-header">
+                        <h2><i class="fas fa-tasks"></i> Tasks</h2>
+                        <div class="bulk-actions">
+                            <button class="bulk-btn" id="selectAllBtn">
+                                <i class="fas fa-check-square"></i> Select All
+                            </button>
+                            <button class="bulk-btn danger" id="deleteSelectedBtn">
+                                <i class="fas fa-trash"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                    <div class="task-list" id="taskList">
+                        <!-- Tasks render here -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Edit Task</h2>
+                <button class="modal-close" id="closeEditModal"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" id="editTaskName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="editPriority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="editCategory">
+                            <option value="General">General</option>
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Health">Health</option>
+                            <option value="Learning">Learning</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="editDueDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" id="editTime">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" id="editEndTime">
+                    </div>
+                    <div class="form-group">
+                        <!-- Empty for alignment -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- GIF Celebration Popup -->
+    <div class="gif-popup-overlay" id="gifPopup">
+        <div class="gif-popup">
+            <button class="gif-popup-close" id="closeGifPopup"><i class="fas fa-times"></i></button>
+            <img id="motivationGif" src="" alt="Celebration GIF" class="motivation-gif">
+            <p class="gif-caption" id="gifCaption"></p>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
